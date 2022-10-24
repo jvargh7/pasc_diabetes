@@ -1,0 +1,120 @@
+
+
+## Definitions of global variables
+pandemic_start = "2020-03-01" # March 1, 2020
+minimum_age = 18
+minimum_prior_encounters = 2
+look_back_prior_encounters = 365*2
+start_followup = index_date + 30
+minimum_followup_encounters = 1
+
+
+## Definitions of assumed OneFlorida+ variables
+encounter_date: Date of an encounter
+patient_id: Unique OneFlorida+ patient ID
+
+
+## Definition of exposed and unexposed cohorts ----------
+
+
+
+## Stage 1: eligible records for identifying patients who had a pandemic visit --------------
+## They should have also had a COVID test to create exposed and unexposed cohorts 
+create stage1_dataset:
+  from all oneflorida:
+    create count_prior_encounters = count(number_encounters %in% dates of [visit_date - look_back_prior_encounters:visit_date])
+    include if encounter_date >= pandemic_start &&
+    include if age >= minimum_age &&
+    include if count_prior_encounters >= minimum_prior_encounters &&
+    include if "had covid test" # Doesn't matter if positive or negative
+    
+    ## Exposed cohort
+    create  any_positive_test = 1 if "(i) any positive test (Nucleic Acid Amplification Tests (NAAT) or antigen)" || 
+            any_positive_test = 1 if "(ii) COVID-19 related ICD-10-CM code." 
+    else any_positive_test = 0
+    
+    ## Unexposed cohort
+    create  all_negative_tests = 1 if "(i) at least one negative test (NAAT or antigen)" &&
+            all_negative tests = 1 if "(ii) no COVID-19 related ICD-10 CM codes (E08.X to E13.X)" && 
+            all_negative_tests = 1 if "(iii) no positive test during follow-up period" 
+    else all_negative_tests = 0
+    
+    ## Getting first record based on encounter_date for exposed and unexposed cohorts
+    group_by patient_id
+      include if (any_positive_test == 1 && encounter_date == min(encounter_date)) ||
+              if (all_negative_tests == 1 && encounter_date == min(encounter_date))
+    
+    
+### Unique ids of stage1_dataset patients
+create stage1_unique_ids:
+  from stage1_dataset:
+    extract unique(patient_id) # One value per patient
+
+
+### Earliest visit of stage1_dataset patients
+create stage1_visits:
+  from stage1_dataset:
+    group by stage1_unique_ids
+      extract encounter_date # One value per patient
+
+## Stage 2: extract prior and follow-up information for all patients from stage 1 ------------
+## Objective: Create computable phenotype for 'prevalent' diabetes, refer Wiese 2018 Pharmacoepidemiol Drug Saf
+## Extract data from 90 days before T0 - 2years = T0 - 820 days
+## Collect data till date of index visit
+
+create stage2_dataset:
+  from all oneflorida records:
+    include if patient_id %in% stage1_unique_ids &&
+    include if encounter_date >= (stage1_visits - 730 - 90) && visit_date <= stage1_visits
+
+create cp1_dataset:
+  for each patient record in stage2_dataset:
+    exclude if encounter_date >= pandemic_start
+    cp1a_criteria = 1 if "A coded inpatient or outpatient T2DM diagnosis (ICD9/ICD10)"; else 0
+    cp1b_criteria = 1 if "an antidiabetic medication prescription within the 90 days following the diagnosis date"; else 0
+    cp1_met = 1 if cp1a_criteria == 1 && cp1b_criteria == 1; else 0
+    exclude if cp1_met == 0
+
+create cp2_dataset:
+  for each patient record in stage2_dataset:
+    exclude if encounter_date >= pandemic_start
+    cp2a_criteria = 1 if "A coded inpatient or outpatient T2DM diagnosis (ICD9/ICD10)"; else 0
+    cp2b_criteria = 1 if "an outpatient glycolated hemoglobin (HbA1C) value≥6.5% within 90 days before or after the diagnosis date"; else 0
+    cp2_met = 1 if cp2a_criteria == 1 && cp2b_criteria == 1; else 0
+    exclude if cp2_met == 0
+    
+create cp3_dataset:
+  for each patient record in stage2_dataset:
+    exclude if encounter_date >= pandemic_start
+    cp3a_criteria = 1 if "an outpatient glycolated hemoglobin (HbA1C) value≥6.5%"; else 0
+    cp3b_criteria = 1 if "an antidiabetic medication prescription within the 90 days following the diagnosis date"; else 0
+    cp3_met = 1 if cp3a_criteria == 1 && cp3b_criteria == 1; else 0
+    exclude if cp3_met == 0
+    
+## Stage 3 dataset attempts to fulfil all inclusion and exclusion criteria for exposed and unexposed cohorts -------   
+## There are definitely more cleaner/efficient ways to do the next sequence of steps to create stage3_dataset
+## Objective: To see if we have at least one encounter in follow-up period
+
+
+create stage3_dataset:
+  from stage2_dataset:
+    exclude if patient_id %in% cp1_dataset ||
+    exclude if patient_id %in% cp2_dataset ||
+    exclude if patient_id %in% cp3_dataset 
+    group_by patient_id 
+      create count_followup_encounters = count(number_encounters %in% dates of [stage1_visits + 30: end-of-followup])
+    ungroup patient_id
+    exclude if count_followup_encounters == 0
+
+
+### Unique ids of stage3_dataset patients
+create stage3_unique_ids:
+  from stage3_dataset:
+    extract unique(patient_id) # One value per patient    
+    
+## Analytic Sample ----------------
+
+create analytic_sample:
+  from all oneflorida:
+    include if patient_id %in% stage3_unique_ids &&
+    include if encounter_date >= stage1_visits
