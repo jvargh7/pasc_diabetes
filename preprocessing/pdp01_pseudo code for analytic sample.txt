@@ -20,6 +20,7 @@ patient_id: Unique OneFlorida+ patient ID
 
 ## Stage 1: eligible records for identifying patients who had a pandemic visit --------------
 ## They should have also had a COVID test to create exposed and unexposed cohorts 
+## !!PENDING!! How do you count number_encounters? 
 create stage1_dataset:
   from all oneflorida:
     create count_prior_encounters = count(number_encounters %in% dates of [visit_date - look_back_prior_encounters:visit_date])
