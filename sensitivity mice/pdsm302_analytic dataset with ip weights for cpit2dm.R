@@ -1,8 +1,4 @@
-# rm(list=ls());gc();source(".Rprofile")
 
-source(paste0(path_pasc_diabetes_repo,"/analysis cpit2dm/pdadm001_analytic dataset for data availability.R"))
-rm(anthro_followup,demographic,index_date,lab_followup); gc()
-# Do not delete all_cpit2dm_df
 
 source(paste0(path_pasc_cmr_repo,"/analysis bmi/pcrab004_matchid dataset.R"))
 
@@ -13,17 +9,16 @@ mo_weights_df <- readRDS(paste0(path_pasc_diabetes_folder,"/working/models pdadm
 imbalanced_variables <- c("age","nhblack","hispanic","nhother","smoking","site","hospitalization","bmi","ldl")
 
 
-before_matchid <- readRDS(paste0(path_pasc_cmr_folder,"/working/models pcrab/pcrab002_imputed lookback dataset.RDS")) %>% 
-  dplyr::select(-matchid) %>% 
+before_matchid <- imputed_dataset %>% 
   left_join(matchid_df %>% dplyr::select(-COHORT),
             by = "ID")
-analytic_dataset_lookback = before_matchid 
 
-# Use if we want to restrict to just the exposed and historical who are matched
-# analytic_dataset_lookback <- bind_rows(before_matchid %>%
-#                                 dplyr::filter(COHORT == "unexposed"),
-#                               before_matchid %>%
-#                                 dplyr::filter(COHORT %in% c("exposed","historical"), matchid %in% before_matchid$ID))
+analytic_dataset_lookback = before_matchid %>% 
+  rename(nhblack = raceeth_category_2,
+         hispanic = raceeth_category_3,
+         nhother = raceeth_category_4) %>% 
+  mutate(site = case_when(is.na(site) ~ "Source 1",
+                          TRUE ~ site))
 
 rm(before_matchid)
 

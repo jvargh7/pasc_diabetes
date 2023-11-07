@@ -12,6 +12,14 @@ lookback_df <- lookback_df %>%
                            landmark_cpit2dm$ID)
                 )
 
+lab_followup_wide_ID <- readRDS(paste0(path_pasc_cmr_folder,"/working/cleaned/pcrpre405_standard labs during followup_wide.RDS")) %>% 
+  group_by(ID) %>% 
+  tally() %>% 
+  dplyr::filter(n >= 1) %>% 
+  dplyr::select(ID) %>% 
+  pull()
+
+
 death <- readRDS(paste0(path_pasc_cmr_folder,"/working/cleaned/pcrpre102_death.RDS"))
 
 
@@ -32,6 +40,10 @@ all_cpit2dm_df = bind_rows(readRDS(paste0(path_pasc_cmr_folder,"/working/cleaned
   mutate(t = as.numeric(last_followup_date - origin_date))
 
 
+cpit2dm_followup_summary = all_cpit2dm_df %>% 
+  dplyr::filter(t >= 100, ID %in% lab_followup_wide_ID)
+
+saveRDS(cpit2dm_followup_summary,paste0(path_pasc_diabetes_folder,"/working/sensitivity utilization/pdsu001_cpit2dm followup summary.RDS"))
 
 
 # # qc for death --------
@@ -48,12 +60,10 @@ outcome_availability = demographic %>%
   dplyr::select(ID, COHORT,matchid) %>% 
   mutate(in_bmi_lookback_ID = case_when(ID %in% lookback_df$ID ~ 1,
                                         TRUE ~ 0),
-         in_dm_followup_ID = case_when(ID %in% all_cpit2dm_df$ID ~ 1,
+         in_sensitivity_utilization_ID = case_when(ID %in% cpit2dm_followup_summary$ID ~ 1,
                                         TRUE ~ 0))
 
 analytic_sample = outcome_availability %>% 
   dplyr::filter(in_bmi_lookback_ID == 1)
 
-table(analytic_sample$ID %in% death$ID) %>% prop.table()
-
-sum(analytic_sample$in_dm_followup_ID)
+sum(analytic_sample$in_sensitivity_utilization_ID)

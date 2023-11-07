@@ -56,12 +56,14 @@ library(gtsummary)
              by = "ID") %>% 
    
    mutate(cpit2dm_availability = case_when(ID %in% cpit2dm_followup_ID ~ 1,
-                                           TRUE ~ 2
-   )
+                                           TRUE ~ 2)
+  
    ) %>% 
    mutate(
      cpit2dm_availability = factor(cpit2dm_availability,levels=c(1:2),
-                                   labels=c("CPIT2DM Available","CPIT2DM Unavailable"))
+                                   labels=c("CPIT2DM Available","CPIT2DM Unavailable")),
+     CP = case_when(ID %in% cpit2dm_followup_ID & incident_dm == 0 ~ "Censored",
+                    TRUE ~ CP)
    ) %>% 
    tbl_summary(by = COHORT,
                include=c(female,age,
@@ -80,7 +82,7 @@ library(gtsummary)
                          
                          IP,OA,OT,AV,NI,TH,ED,OS,EI,UN,IS,IC,
                          bmi_category, CP, t, incident_dm,
-                         landmark_cpit2dm, lookback_cpit2dm
+                         landmark_cpit2dm, lookback_cpit2dm,cpit2dm_availability
                ),
                missing = "ifany",
                missing_text = "Missing",
@@ -133,7 +135,8 @@ library(gtsummary)
                            TH~ "continuous2",ED~ "continuous2",OS~ "continuous2",
                            EI~ "continuous2",UN~ "continuous2",IS~ "continuous2",IC~ "continuous2",
                            bmi_category ~ "categorical", CP ~ "categorical", t ~ "continuous2", incident_dm ~ "dichotomous",
-                           landmark_cpit2dm ~ "categorical", lookback_cpit2dm ~ "categorical"
+                           landmark_cpit2dm ~ "categorical", lookback_cpit2dm ~ "categorical",
+                           cpit2dm_availability ~ "categorical"
                ),
                digits = list(age ~ c(1,1),
                              nhwhite ~ c(0,1),
