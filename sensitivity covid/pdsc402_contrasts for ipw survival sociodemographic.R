@@ -1,10 +1,10 @@
 rm(list=ls());gc();source(".Rprofile")
 
-ipw_cox_fit <- readRDS(paste0(path_pasc_diabetes_folder,"/working/models pdadm/pdadm401_ipw cox fit.RDS"))
-ipw_cox_sex <- readRDS(paste0(path_pasc_diabetes_folder,"/working/models pdadm/pdadm401_ipw cox sex.RDS"))
-ipw_cox_raceeth <- readRDS(paste0(path_pasc_diabetes_folder,"/working/models pdadm/pdadm401_ipw cox raceeth.RDS"))
-ipw_cox_age <- readRDS(paste0(path_pasc_diabetes_folder,"/working/models pdadm/pdadm401_ipw cox age.RDS"))
-ipw_cox_hospitalization <- readRDS(paste0(path_pasc_diabetes_folder,"/working/models pdadm/pdadm401_ipw cox hospitalization.RDS"))
+ipw_cox_fit <- readRDS(paste0(path_pasc_diabetes_folder,"/working/sensitivity covid/pdsc401_ipw cox fit.RDS"))
+ipw_cox_sex <- readRDS(paste0(path_pasc_diabetes_folder,"/working/sensitivity covid/pdsc401_ipw cox sex.RDS"))
+ipw_cox_raceeth <- readRDS(paste0(path_pasc_diabetes_folder,"/working/sensitivity covid/pdsc401_ipw cox raceeth.RDS"))
+ipw_cox_age <- readRDS(paste0(path_pasc_diabetes_folder,"/working/sensitivity covid/pdsc401_ipw cox age.RDS"))
+ipw_cox_hospitalization <- readRDS(paste0(path_pasc_diabetes_folder,"/working/sensitivity covid/pdsc401_ipw cox hospitalization.RDS"))
 
 
 
@@ -20,7 +20,7 @@ source("analysis cpit2dm/pdadmaux_difference grids.R")
 # y = ""
 
 # Derived from pcrab406_difference relative to exposed at time 0.R
-pdadm402_contrast_fit <- function(fit,x,y){
+pdsc402_contrast_fit <- function(fit,x,y){
   names_het = names(fit$coefficients)
   
   mm = matrix(c(
@@ -84,7 +84,7 @@ contrast_overall <- map_dfr(1:nrow(difference_grid_overall),
                               y_name = difference_grid_overall$modifier1[i]
                               # z_value = difference_grid_overall$modifier2_value[i]
                               bind_rows(
-                                pdadm402_contrast_fit(ipw_cox_fit,x=x_name,y="") %>% 
+                                pdsc402_contrast_fit(ipw_cox_fit,x=x_name,y="") %>% 
                                   mutate(exposure = x_name,
                                          exposure_value = 1,
                                          modifier_value = NA_real_,
@@ -102,7 +102,7 @@ contrast_sex <- map_dfr(1:nrow(difference_grid_sex),
                           x_name = difference_grid_sex$cohort[i]
                           y_name = difference_grid_sex$modifier1[i]
                           bind_rows(
-                            pdadm402_contrast_fit(ipw_cox_sex,x_name,y_name) %>% 
+                            pdsc402_contrast_fit(ipw_cox_sex,x_name,y_name) %>% 
                               mutate(exposure = x_name,
                                      modifier1 = y_name,
                                      exposure_value = 1,
@@ -118,7 +118,7 @@ contrast_age <- map_dfr(1:nrow(difference_grid_age),
                           x_name = difference_grid_age$cohort[i]
                           y_name = difference_grid_age$modifier1[i]
                           bind_rows(
-                            pdadm402_contrast_fit(ipw_cox_age,x_name,y_name) %>% 
+                            pdsc402_contrast_fit(ipw_cox_age,x_name,y_name) %>% 
                               mutate(exposure = x_name,
                                      modifier1 = y_name,
                                      exposure_value = 1,
@@ -136,7 +136,7 @@ contrast_raceeth <- map_dfr(1:nrow(difference_grid_raceeth),
                               x_name = difference_grid_raceeth$cohort[i]
                               y_name = difference_grid_raceeth$modifier1[i]
                               bind_rows(
-                                pdadm402_contrast_fit(ipw_cox_raceeth,x_name,y_name) %>% 
+                                pdsc402_contrast_fit(ipw_cox_raceeth,x_name,y_name) %>% 
                                   mutate(exposure = x_name,
                                          modifier1 = y_name,
                                          exposure_value = 1,
@@ -154,7 +154,7 @@ contrast_hospitalization <- map_dfr(1:nrow(difference_grid_hospitalization),
                                       x_name = difference_grid_hospitalization$cohort[i]
                                       y_name = difference_grid_hospitalization$modifier1[i]
                                       bind_rows(
-                                        pdadm402_contrast_fit(ipw_cox_hospitalization,x_name,y_name) %>% 
+                                        pdsc402_contrast_fit(ipw_cox_hospitalization,x_name,y_name) %>% 
                                           mutate(exposure = x_name,
                                                  modifier1 = y_name,
                                                  exposure_value = 1,
@@ -170,4 +170,4 @@ bind_rows(contrast_overall,
           contrast_hospitalization %>% mutate(modifier_var = "hospitalization_category")
 ) %>% 
   dplyr::filter(term %in% c("Contrast 3")) %>% 
-  write_csv(.,"analysis cpit2dm/pdadm402_difference relative to exposed.csv")
+  write_csv(.,"sensitivity covid/pdsc402_difference relative to exposed.csv")

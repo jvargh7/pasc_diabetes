@@ -28,7 +28,9 @@ lookback_svy <-  lookback_df %>%
        lookback_cpit2dm = case_when(ID %in% lookback_cpit2dm$ID ~ 1,
                                     TRUE ~ 2),
        landmark_cpit2dm = case_when(ID %in% landmark_cpit2dm$ID ~ 1,
-                                    TRUE ~ 2)) %>% 
+                                    TRUE ~ 2),
+       payer_type_primary2 = case_when(payer_type_primary %in% c("Bluecross","Private or Other") ~ "Private",
+                                       TRUE ~ payer_type_primary)) %>% 
   mutate(bmi_lb_availability = factor(bmi_lb_availability,levels=c(1:2),
                                       labels=c("Lookback available","Excluded")),
          lookback_cpit2dm = factor(lookback_cpit2dm,levels=c(1,2),labels=c("Unverified New onset in Lookback",
@@ -52,7 +54,7 @@ lookback_svy <-  lookback_df %>%
                              nhwhite,nhblack,hispanic, nhother,
                              smoking, 
                              site,
-                             payer_type_primary,payer_type_secondary,
+                             payer_type_primary2,payer_type_secondary,
                              hospitalization, 
                              p_hyperglycemia, 
                              bmi, HT, SYSTOLIC, DIASTOLIC,
@@ -79,7 +81,7 @@ lookback_svy <-  lookback_df %>%
                                
                                site ~ "categorical",
                                
-                               payer_type_primary ~ "categorical",
+                               payer_type_primary2 ~ "categorical",
                                
                                payer_type_secondary ~ "categorical",
                                hospitalization ~ "dichotomous",

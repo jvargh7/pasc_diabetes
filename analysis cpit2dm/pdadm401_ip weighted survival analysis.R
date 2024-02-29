@@ -1,4 +1,3 @@
-
 source("analysis cpit2dm/pdadm302_analytic dataset with ip weights for cpit2dm.R")
 
 # https://github.com/eleanormurray/CausalSurvivalAnalysisWorkshop/blob/master/R/workshop_v6_tidy.R
@@ -24,9 +23,9 @@ ipw_cox_raceeth <-  coxph(as.formula(paste0("Surv(t, incident_dm) ~ COHORT*racee
                                             paste0(imbalanced_variables[!imbalanced_variables %in% 
                                                                           c("nhwhite","nhblack","hispanic","nhother")],
                                                    collapse=" + "))
-                                     ), 
-                          data = cpit2dm_df %>% dplyr::filter(raceeth_category %in% c("NH White","NH Black","Hispanic")), 
-                          method='efron',weights = sipw_raceeth,cluster = ID)
+), 
+data = cpit2dm_df %>% dplyr::filter(raceeth_category %in% c("NH White","NH Black","Hispanic")), 
+method='efron',weights = sipw_raceeth,cluster = ID)
 summary(ipw_cox_raceeth)
 
 
@@ -36,7 +35,7 @@ summary(ipw_cox_age)
 
 
 ipw_cox_hospitalization <-  coxph(as.formula(paste0("Surv(t, incident_dm) ~ COHORT*hospitalization + ",paste0(imbalanced_variables,collapse="+"))), 
-                      data = cpit2dm_df, method='efron',weights = sipw_hospitalization,cluster = ID)
+                                  data = cpit2dm_df, method='efron',weights = sipw_hospitalization,cluster = ID)
 summary(ipw_cox_hospitalization)
 
 saveRDS(ipw_cox_fit,paste0(path_pasc_diabetes_folder,"/working/models pdadm/pdadm401_ipw cox fit.RDS"))

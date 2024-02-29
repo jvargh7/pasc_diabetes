@@ -6,11 +6,11 @@ landmark_cpit2dm <- readRDS(paste0(path_pasc_cmr_folder,"/working/cleaned/pcrpre
 
 
 lookback_df <- lookback_df %>% 
-  dplyr::filter(!is.na(bmi),
-                !ID %in% c(
-                           # lookback_cpit2dm$ID,
-                           landmark_cpit2dm$ID)
-                )
+  dplyr::filter(!is.na(bmi)
+                ) %>% 
+  dplyr::filter(!ID %in% c(
+                  # lookback_cpit2dm$ID,
+                  landmark_cpit2dm$ID))
 
 death <- readRDS(paste0(path_pasc_cmr_folder,"/working/cleaned/pcrpre102_death.RDS"))
 

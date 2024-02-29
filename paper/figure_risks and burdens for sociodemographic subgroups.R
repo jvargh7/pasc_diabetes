@@ -99,7 +99,8 @@ pdadm403_relative <-   read_csv("analysis cpit2dm/pdadm403_difference cumulative
                                        "Hospitalized")),
          group = factor(COHORT,levels=c("historical","unexposed","exposed"),
                         labels=c("Historical","Unexposed","Exposed"))) %>% 
-  mutate(across(contains("reduced_surv"),.fns=function(x) x*-1)) 
+  mutate(across(contains("reduced_surv"),.fns=function(x) case_when(!is.na(x) ~ x*-1,
+                                                                    TRUE ~ 0))) 
 
 (fig_relative = pdadm403_relative %>% 
     ggplot(data=.,aes(x=reduced_surv_est,xmin=reduced_surv_lci,xmax=reduced_surv_uci,y=facet,fill=group)) +
@@ -134,13 +135,13 @@ bind_rows(pdadm402_hr %>%
             mutate(type = "HR"),
           pdadm403_burden %>% 
             mutate(coef_ci = paste0(round(cuminc_surv,1)," (",
-                                    round(cuminc_ci_lower,1),", ",
-                                    round(cuminc_ci_upper,1),")")) %>% 
+                                    round(cuminc_ci_upper,1),", ",
+                                    round(cuminc_ci_lower,1),")")) %>% 
             mutate(type = "Burden per 1000"),
           pdadm403_relative %>% 
             mutate(coef_ci = paste0(round(reduced_surv_est,1)," (",
-                                    round(reduced_surv_lci,1),", ",
-                                    round(reduced_surv_uci,1),")")) %>% 
+                                    round(reduced_surv_uci,1),", ",
+                                    round(reduced_surv_lci,1),")")) %>% 
             mutate(type = "Burden relative to Exposed")
           ) %>% 
   dplyr::select(group,facet,coef_ci,type) %>% 
