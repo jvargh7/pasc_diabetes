@@ -247,29 +247,38 @@ cp2 <- bind_rows(
   left_join(.,
             {.} %>% 
               dplyr::select(ID,included_date,others_true,metformin_tzd,any_true) %>% 
-			  # rename columns to avoid duplication
+              # rename columns to avoid duplication
               rename(criterion2_date = included_date,
                      c2_others_true = others_true,
                      c2_metformin_tzd = metformin_tzd,
                      c2_any_true = any_true),
             by = c("ID")) %>% 
-	# Restrict to instances when dates occur within 2 years (730 days) of each other
+  # Restrict to instances when different encounters occur on separate days within 2 years (730 days) of each other
   dplyr::filter(included_date < criterion2_date,criterion2_date <= (included_date + days(730))) %>% 
   # Define T2DM
-  mutate(incident_dm = case_when(# others_true >= 1 & c2_others_true >= 1 ~ 1,
-								 procedures_true > 1 ~ 1,
-								 procedures_true == 1 & otherrx_true >= 1 ~ 1,
-                                 metformin_tzd >= 1 & c2_others_true >= 1 ~ 1,
-                                 TRUE ~ 0)) %>% 
+  mutate(incident_dm = case_when(
+    # others_true >= 1 & c2_others_true >= 1 ~ 1, -- This will count each medication class as a flag. Identifies 5x more cases.
+    # Same day criteria (included_date) ---
+    procedures_true > 1 ~ 10, # Any combination of A1c, FPG, RPG or Dx on same day 
+    procedures_true == 1 & otherrx_true >= 1 ~ 10,
+    metformin_tzd >= 1 & others_true >= 1 ~ 10,
+    # Later day criteria (included_date + criterion2_date) ----
+    others_true >= 1 & c2_others_true >= 1 ~ 20,
+    metformin_tzd >= 1 & c2_others_true >= 1 ~ 20,
+    others_true >= 1 & c2_metformin_tzd >= 1 ~ 20,
+    TRUE ~ 0)) %>% 
   # Take the earliest date of displaying an incident_dm
   group_by(ID) %>% 
-  dplyr::filter(included_date == min(included_date),incident_dm == 1) %>% 
+  dplyr::filter(included_date == min(included_date),
+                incident_dm %in% c(10,20)) %>% 
   ungroup() %>% 
   # Remove duplicates based on patient ID and earliest date
   distinct(ID,included_date,.keep_all=TRUE) %>% 
   # 
-  rename(criterion1_date = included_date,
-		diagnosis_date = criterion2_date) %>% 
+  rename(criterion1_date = included_date) %>%
+  mutate(diagnosis_date = case_when(incident_dm == 10 ~ criterion1_date,
+                                    TRUE ~ criterion2_date)) %>% 
+  mutate(incident_dm = 1) %>% 
 # Are there encounters in the previous 1.5 years?
   mutate(criterion1_date_minus549 = criterion1_date - days(549)) %>% 
   dplyr::filter(ID %in% included_patients$ID)
