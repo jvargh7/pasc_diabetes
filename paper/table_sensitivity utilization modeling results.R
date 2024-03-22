@@ -4,6 +4,7 @@ source("C:/code/external/pasc_cardiometabolic_risk/functions/marginal_prediction
 
 # Hazard ratios ----------
 pdsu402_hr <- read_csv("sensitivity utilization/pdsu402_difference relative to exposed.csv") %>% 
+  dplyr::filter(modifier_var != 'Overlap' | is.na(modifier_var)) %>% 
   mutate(group = str_replace(exposure,"COHORT",""),
          facet = str_replace(modifier1,modifier_var,"")) %>% 
   mutate(facet = case_when(is.na(modifier1) & modifier_var == "hospitalization_category" ~ "Not Hospitalized",
@@ -39,6 +40,7 @@ pdsu403_burden <-   read_csv("sensitivity utilization/pdsu403_cumulative inciden
     facet = modifier) %>% 
   mutate(facet = case_when(is.na(facet) ~ "Overall",
                            TRUE ~ facet)) %>% 
+  dplyr::filter(facet != 'Overlap') %>% 
   mutate(facet = factor(facet,levels=c("Overall",
                                        "Female",
                                        "Male",
@@ -80,6 +82,7 @@ pdsu403_relative <-   read_csv("sensitivity utilization/pdsu403_difference cumul
 
 
 pdsu404_hr_historical <- read_csv("sensitivity utilization/pdsu404_difference relative to historical.csv") %>% 
+  dplyr::filter(modifier_var != 'Overlap' | is.na(modifier_var)) %>% 
   mutate(group = str_replace(exposure,"COHORT",""),
          facet = str_replace(modifier1,modifier_var,"")) %>% 
   mutate(facet = case_when(is.na(modifier1) & modifier_var == "hospitalization_category" ~ "Not Hospitalized",

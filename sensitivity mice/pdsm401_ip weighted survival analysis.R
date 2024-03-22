@@ -12,17 +12,20 @@ mi_dfs <- readRDS(paste0(path_pasc_diabetes_folder,"/working/sensitivity mice/pd
 
 library(survival)
 
-ipw_cox_fit <- ipw_cox_sex <- ipw_cox_raceeth <- ipw_cox_age <- ipw_cox_hospitalization <- list()
+ipw_cox_fit <- overlap_cox_fit <- ipw_cox_sex <- ipw_cox_raceeth <- ipw_cox_age <- ipw_cox_hospitalization <- list()
 
 for (i in 1:5){
   imputed_dataset = complete(mi_dfs,i)
   source("sensitivity mice/pdsm302_analytic dataset with ip weights for cpit2dm.R")
   # IP weighted Hazard Ratios ------------
   ipw_cox_fit[[i]] <- coxph(as.formula(paste0("Surv(t, incident_dm) ~ COHORT + ",paste0(imbalanced_variables,collapse="+"))), 
-                       data = cpit2dm_df, method='efron',weights = sipw,cluster = ID)
+                       data = cpit2dm_df, method='efron',weights = w,cluster = ID)
+  
+  overlap_cox_fit[[i]] <- coxph(as.formula(paste0("Surv(t, incident_dm) ~ COHORT + ",paste0(imbalanced_variables,collapse="+"))), 
+                       data = cpit2dm_df, method='efron',weights = w_overlap,cluster = ID)
 
   ipw_cox_sex[[i]] <- coxph(as.formula(paste0("Surv(t, incident_dm) ~ COHORT*sex_category + ",paste0(imbalanced_variables,collapse="+"))), 
-                       data = cpit2dm_df, method='efron',weights = sipw_sex,cluster = ID)
+                       data = cpit2dm_df, method='efron',weights = w_sex,cluster = ID)
 
   
   ipw_cox_raceeth[[i]] <-  coxph(as.formula(paste0("Surv(t, incident_dm) ~ COHORT*raceeth_category + ",
@@ -31,14 +34,14 @@ for (i in 1:5){
                                                      collapse=" + "))
   ), 
   data = cpit2dm_df %>% dplyr::filter(raceeth_category %in% c("NH White","NH Black","Hispanic")), 
-  method='efron',weights = sipw_raceeth,cluster = ID)
+  method='efron',weights = w_raceeth,cluster = ID)
   
   ipw_cox_age[[i]] <-  coxph(as.formula(paste0("Surv(t, incident_dm) ~ COHORT*age_category + ",paste0(imbalanced_variables,collapse="+"))), 
-                        data = cpit2dm_df, method='efron',weights = sipw_age,cluster = ID)
+                        data = cpit2dm_df, method='efron',weights = w_age,cluster = ID)
 
   
   ipw_cox_hospitalization[[i]] <-  coxph(as.formula(paste0("Surv(t, incident_dm) ~ COHORT*hospitalization + ",paste0(imbalanced_variables,collapse="+"))), 
-                                    data = cpit2dm_df, method='efron',weights = sipw_hospitalization,cluster = ID)
+                                    data = cpit2dm_df, method='efron',weights = w_hospitalization,cluster = ID)
 
   
 }
@@ -49,6 +52,9 @@ source("C:/code/external/functions/imputation/save_mi_coxph.R")
 
 save_mi_coxph(ipw_cox_fit) %>% 
   saveRDS(.,paste0(path_pasc_diabetes_folder,"/working/sensitivity mice/pdsm401_ipw cox fit.RDS"))
+
+save_mi_coxph(overlap_cox_fit) %>% 
+  saveRDS(.,paste0(path_pasc_diabetes_folder,"/working/sensitivity mice/pdsm401_overlap cox fit.RDS"))
 
 save_mi_coxph(ipw_cox_sex) %>% 
   saveRDS(.,paste0(path_pasc_diabetes_folder,"/working/sensitivity mice/pdsm401_ipw cox sex.RDS"))
@@ -69,6 +75,7 @@ source("C:/code/external/functions/imputation/clean_mi_conditionalregression.R")
 
 bind_rows(
   clean_mi_conditionalregression(ipw_cox_fit,link="coxph") %>% mutate(model = "Overall"),
+  clean_mi_conditionalregression(overlap_cox_fit,link="coxph") %>% mutate(model = "Overlap"),
   clean_mi_conditionalregression(ipw_cox_sex,link="coxph") %>% mutate(model = "Sex"),
   clean_mi_conditionalregression(ipw_cox_age,link="coxph") %>% mutate(model = "Age"),
   clean_mi_conditionalregression(ipw_cox_raceeth,link="coxph") %>% mutate(model = "Race-Ethnicity"),

@@ -38,7 +38,7 @@ cpit2dm_df = all_cpit2dm_df %>%
   dplyr::filter(ID %in% analytic_sample$ID) %>% 
   left_join(tx_weights_df %>%
               dplyr::select(ID,sipw,sipw_sex,sipw_age,sipw_raceeth,
-                            sipw_hospitalization,
+                            sipw_hospitalization,overlap_weight,
                             sex_category,age_category,raceeth_category,
                             hospitalization),
             by = "ID") %>%
@@ -57,6 +57,7 @@ cpit2dm_df = all_cpit2dm_df %>%
                 function(x) case_when(is.na(x) ~ 0,
                                       TRUE ~ x))) %>% 
   mutate(w = sipw*ltfu_weights,
+         w_overlap = overlap_weight*ltfu_weights,
          w_sex = sipw_sex*ltfu_weights,
          w_age = sipw_age*ltfu_weights,
          w_raceeth = sipw_raceeth*ltfu_weights,

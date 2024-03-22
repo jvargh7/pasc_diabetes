@@ -3,7 +3,8 @@ rm(list=ls());gc();source(".Rprofile")
 source("C:/code/external/pasc_cardiometabolic_risk/functions/marginal_predictions_plot.R")
 
 # Hazard ratios ----------
-pdadm405_hr_historical <- read_csv("analysis cpit2dm/pdadm405_difference relative to historical.csv") %>% 
+pdadm405_hr_historical <- read_csv("analysis cpit2dm/pdadm405_difference relative to historical.csv") %>%
+  dplyr::filter(modifier_var != 'Overlap' | is.na(modifier_var)) %>% 
   mutate(group = str_replace(exposure,"COHORT",""),
          facet = str_replace(modifier1,modifier_var,"")) %>% 
   mutate(facet = case_when(is.na(modifier1) & modifier_var == "hospitalization_category" ~ "Not Hospitalized",
@@ -33,6 +34,7 @@ pdadm405_hr_historical <- read_csv("analysis cpit2dm/pdadm405_difference relativ
 
 # Hazard ratios ----------
 pdadm406_hr_unexposed <- read_csv("analysis cpit2dm/pdadm406_difference relative to unexposed.csv") %>% 
+  dplyr::filter(modifier_var != 'Overlap' | is.na(modifier_var)) %>% 
   mutate(group = str_replace(exposure,"COHORT",""),
          facet = str_replace(modifier1,modifier_var,"")) %>% 
   mutate(facet = case_when(is.na(modifier1) & modifier_var == "hospitalization_category" ~ "Not Hospitalized",
@@ -68,6 +70,7 @@ pdadm403_burden <-   read_csv("analysis cpit2dm/pdadm403_cumulative incidence at
     facet = modifier) %>% 
   mutate(facet = case_when(is.na(facet) ~ "Overall",
                            TRUE ~ facet)) %>% 
+  dplyr::filter(facet != 'Overlap') %>% 
   mutate(facet = factor(facet,levels=c("Overall",
                                        "Female",
                                        "Male",
@@ -92,6 +95,7 @@ pdadm403_relative_historical <-   read_csv("analysis cpit2dm/pdadm403_difference
     facet = modifier) %>% 
   mutate(facet = case_when(is.na(facet) ~ "Overall",
                            TRUE ~ facet)) %>% 
+  dplyr::filter(facet != 'Overlap') %>% 
   mutate(facet = factor(facet,levels=c("Overall",
                                        "Female",
                                        "Male",
@@ -116,6 +120,7 @@ pdadm403_relative_unexposed <-   read_csv("analysis cpit2dm/pdadm403_difference 
     facet = modifier) %>% 
   mutate(facet = case_when(is.na(facet) ~ "Overall",
                            TRUE ~ facet)) %>% 
+  dplyr::filter(facet != 'Overlap') %>% 
   mutate(facet = factor(facet,levels=c("Overall",
                                        "Female",
                                        "Male",

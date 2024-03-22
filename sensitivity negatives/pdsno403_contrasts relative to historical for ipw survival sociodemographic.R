@@ -1,6 +1,7 @@
 rm(list=ls());gc();source(".Rprofile")
 
 ipw_cox_fit <- readRDS(paste0(path_pasc_diabetes_folder,"/working/sensitivity negatives/pdsno401_ipw cox fit.RDS"))
+overlap_cox_fit <- readRDS(paste0(path_pasc_diabetes_folder,"/working/sensitivity negatives/pdsno401_overlap cox fit.RDS"))
 ipw_cox_sex <- readRDS(paste0(path_pasc_diabetes_folder,"/working/sensitivity negatives/pdsno401_ipw cox sex.RDS"))
 ipw_cox_raceeth <- readRDS(paste0(path_pasc_diabetes_folder,"/working/sensitivity negatives/pdsno401_ipw cox raceeth.RDS"))
 ipw_cox_age <- readRDS(paste0(path_pasc_diabetes_folder,"/working/sensitivity negatives/pdsno401_ipw cox age.RDS"))
@@ -92,7 +93,21 @@ contrast_overall <- map_dfr(1:nrow(difference_grid_overall),
                                 return(.)
                             })
 
-
+# Overlap Contrasts -------------
+contrast_overlap <- map_dfr(1:nrow(difference_grid_overall),
+                            function(i){
+                              print(i)
+                              x_name = difference_grid_overall$cohort[i]
+                              y_name = difference_grid_overall$modifier1[i]
+                              # z_value = difference_grid_overall$modifier2_value[i]
+                              bind_rows(
+                                pdadm405_contrast_fit(overlap_cox_fit,x=x_name,y="") %>% 
+                                  mutate(exposure = x_name,
+                                         exposure_value = 1,
+                                         modifier_value = NA_real_,
+                                         outcome = "CPITF")) %>% 
+                                return(.)
+                            })
 
 
 # Sex Contrasts -------------
@@ -164,6 +179,7 @@ contrast_hospitalization <- map_dfr(1:nrow(difference_grid_hospitalization),
                                     })
 
 bind_rows(contrast_overall,
+          contrast_overlap %>% mutate(modifier_var = "Overlap"),
           contrast_sex %>% mutate(modifier_var = "sex_category"),
           contrast_age %>% mutate(modifier_var = "age_category"),
           contrast_raceeth %>% mutate(modifier_var = "raceeth_category"),

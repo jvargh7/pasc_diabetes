@@ -4,6 +4,7 @@ source("C:/code/external/pasc_cardiometabolic_risk/functions/marginal_prediction
 
 # Hazard ratios ----------
 pdadm405_hr <- read_csv("analysis cpit2dm/pdadm406_difference relative to unexposed.csv") %>% 
+  dplyr::filter(modifier_var != 'Overlap' | is.na(modifier_var)) %>% 
   mutate(group = str_replace(exposure,"COHORT",""),
          facet = str_replace(modifier1,modifier_var,"")) %>% 
   mutate(facet = case_when(is.na(modifier1) & modifier_var == "hospitalization_category" ~ "Not Hospitalized",

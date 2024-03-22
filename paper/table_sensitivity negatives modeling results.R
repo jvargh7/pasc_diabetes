@@ -3,6 +3,7 @@ rm(list=ls());gc();source(".Rprofile")
 
 # Hazard ratios ----------
 pdsnf402_hr <- read_csv("sensitivity negatives/pdsnf402_difference relative to exposed.csv") %>% 
+  dplyr::filter(modifier_var != 'Overlap' | is.na(modifier_var)) %>% 
   mutate(group = str_replace(exposure,"COHORT",""),
          facet = str_replace(modifier1,modifier_var,"")) %>% 
   mutate(facet = case_when(is.na(modifier1) & modifier_var == "hospitalization_category" ~ "Not Hospitalized",
@@ -30,6 +31,7 @@ pdsnf402_hr <- read_csv("sensitivity negatives/pdsnf402_difference relative to e
 
 
 pdsno402_hr <- read_csv("sensitivity negatives/pdsno402_difference relative to exposed.csv") %>% 
+  dplyr::filter(modifier_var != 'Overlap' | is.na(modifier_var)) %>% 
   mutate(group = str_replace(exposure,"COHORT",""),
          facet = str_replace(modifier1,modifier_var,"")) %>% 
   mutate(facet = case_when(is.na(modifier1) & modifier_var == "hospitalization_category" ~ "Not Hospitalized",

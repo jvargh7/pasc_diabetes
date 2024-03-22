@@ -296,7 +296,7 @@ cp2_valid <- cp2 %>%
 # Diagnosis code assigned to latter date of pair of events
 
 supremedm <- bind_rows(cp1_valid %>%
-					  rename(diagnosis_date = criterion1_date) %>% 
+					    mutate(diagnosis_date = criterion1_date) %>% 
                        mutate(
                          CP = "CP1"),
                      

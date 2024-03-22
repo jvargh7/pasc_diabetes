@@ -12,8 +12,12 @@ summary(cox_fit)
 
 # IP weighted Hazard Ratios ------------
 ipw_cox_fit <- coxph(as.formula(paste0("Surv(t, incident_tf) ~ COHORT + ",paste0(imbalanced_variables,collapse="+"))), 
-                     data = cpitf_df, method='efron',weights = sipw,cluster = ID)
+                     data = cpitf_df, method='efron',weights = w,cluster = ID)
 summary(ipw_cox_fit)
+
+overlap_cox_fit <- coxph(as.formula(paste0("Surv(t, incident_tf) ~ COHORT + ",paste0(imbalanced_variables,collapse="+"))), 
+                     data = cpitf_df, method='efron',weights = w_overlap,cluster = ID)
+summary(overlap_cox_fit)
 
 ipw_cox_sex <- coxph(as.formula(paste0("Surv(t, incident_tf) ~ COHORT*sex_category + ",paste0(imbalanced_variables,collapse="+"))), 
                      data = cpitf_df, method='efron',weights = sipw_sex,cluster = ID)
@@ -40,6 +44,7 @@ ipw_cox_hospitalization <-  coxph(as.formula(paste0("Surv(t, incident_tf) ~ COHO
 summary(ipw_cox_hospitalization)
 
 saveRDS(ipw_cox_fit,paste0(path_pasc_diabetes_folder,"/working/sensitivity negatives/pdsnf401_ipw cox fit.RDS"))
+saveRDS(overlap_cox_fit,paste0(path_pasc_diabetes_folder,"/working/sensitivity negatives/pdsnf401_overlap cox fit.RDS"))
 saveRDS(ipw_cox_sex,paste0(path_pasc_diabetes_folder,"/working/sensitivity negatives/pdsnf401_ipw cox sex.RDS"))
 saveRDS(ipw_cox_raceeth,paste0(path_pasc_diabetes_folder,"/working/sensitivity negatives/pdsnf401_ipw cox raceeth.RDS"))
 saveRDS(ipw_cox_age,paste0(path_pasc_diabetes_folder,"/working/sensitivity negatives/pdsnf401_ipw cox age.RDS"))
@@ -47,6 +52,7 @@ saveRDS(ipw_cox_hospitalization,paste0(path_pasc_diabetes_folder,"/working/sensi
 
 bind_rows(
   broom::tidy(ipw_cox_fit) %>% mutate(model = "Overall"),
+  broom::tidy(overlap_cox_fit) %>% mutate(model = "Overlap"),
   broom::tidy(ipw_cox_sex) %>% mutate(model = "Sex"),
   broom::tidy(ipw_cox_age) %>% mutate(model = "Age"),
   broom::tidy(ipw_cox_raceeth) %>% mutate(model = "Race-Ethnicity"),
