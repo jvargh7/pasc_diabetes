@@ -57,3 +57,7 @@ analytic_sample = outcome_availability %>%
 table(analytic_sample$ID %in% death$ID) %>% prop.table()
 
 sum(analytic_sample$in_dm_followup_ID)
+
+analytic_sample %>% 
+  dplyr::select(ID,COHORT) %>% 
+  saveRDS(.,paste0(path_pasc_diabetes_folder,"/working/cleaned/pdadm001_analytic dataset for data availability.RDS"))

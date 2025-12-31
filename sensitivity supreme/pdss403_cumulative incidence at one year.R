@@ -105,3 +105,36 @@ surv_probs %>%
   mutate(across(one_of(c("reduced_surv_est","reduced_surv_lci","reduced_surv_uci")),.fns=function(x) (x)*1000))) %>% 
   write_csv(.,"sensitivity supreme/pdss403_difference cumulative incidence from exposed at one year.csv")
 
+(diff_with_historical = read_csv("sensitivity supreme/pdss403_cumulative incidence at one year.csv") %>% 
+    left_join(.,
+              {.} %>% 
+                dplyr::filter(COHORT == "historical") %>% 
+                dplyr::select(time,surv,modifier,se) %>% 
+                rename(historical_surv = surv,
+                       historical_se = se),
+              by = c("time","modifier")) %>% 
+    mutate(higher_surv_est = surv - historical_surv,
+           higher_surv_se = sqrt(se^2 + historical_se^2)) %>% 
+    mutate(higher_surv_lci = case_when(COHORT == "historical" ~ NA_real_,
+                                       TRUE ~ higher_surv_est - 1.96*higher_surv_se),
+           higher_surv_uci = case_when(COHORT == "historical" ~ NA_real_,
+                                       TRUE ~ higher_surv_est + 1.96*higher_surv_se)) %>% 
+    mutate(across(one_of(c("higher_surv_est","higher_surv_lci","higher_surv_uci")),.fns=function(x) (x)*1000))) %>% 
+  write_csv(.,"sensitivity supreme/pdss403_difference cumulative incidence from historical at one year.csv")
+
+(diff_with_unexposed = read_csv("sensitivity supreme/pdss403_cumulative incidence at one year.csv") %>% 
+    left_join(.,
+              {.} %>% 
+                dplyr::filter(COHORT == "unexposed") %>% 
+                dplyr::select(time,surv,modifier,se) %>% 
+                rename(unexposed_surv = surv,
+                       unexposed_se = se),
+              by = c("time","modifier")) %>% 
+    mutate(diff_surv_est = surv - unexposed_surv,
+           diff_surv_se = sqrt(se^2 + unexposed_se^2)) %>% 
+    mutate(diff_surv_lci = case_when(COHORT == "unexposed" ~ NA_real_,
+                                     TRUE ~ diff_surv_est - 1.96*diff_surv_se),
+           diff_surv_uci = case_when(COHORT == "unexposed" ~ NA_real_,
+                                     TRUE ~ diff_surv_est + 1.96*diff_surv_se)) %>% 
+    mutate(across(one_of(c("diff_surv_est","diff_surv_lci","diff_surv_uci")),.fns=function(x) (x)*1000))) %>% 
+  write_csv(.,"sensitivity supreme/pdss403_difference cumulative incidence from unexposed at one year.csv")

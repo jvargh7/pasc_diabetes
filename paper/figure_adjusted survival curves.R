@@ -57,3 +57,4 @@ fig_adj_curve_cuminc <- adj_survival_fit$plotdata %>%
 fig_adj_curve_cuminc %>% 
   ggsave(.,filename=paste0(path_pasc_diabetes_folder,"/figures/adjusted cumulative incidence curves overall direct standardization.jpg"),width=6,height=6)
 
+# Generate a scatterplot with blue color for historical, green for unexposed, and red for exposed

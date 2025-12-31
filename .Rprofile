@@ -1,6 +1,6 @@
 source("C:/code/external/pasc_cardiometabolic_risk/.Rprofile")
 
-path_pasc_diabetes_folder <- "C:/Cloud/OneDrive - Emory University/Papers/PASC Diabetes Incidence" 
+path_pasc_diabetes_folder <- "C:/Cloud/OneDrive - Emory University/Papers/_Published/PASC Diabetes Incidence" 
 path_pasc_diabetes_repo <- "C:/code/external/pasc_diabetes"
 
 
@@ -19,3 +19,19 @@ icd10_traumatic_fractures <- c("S02\\.", # Head https://www.icd10data.com/ICD10C
 icd10_otitis_media <- c("H65\\.",
                         "H66\\.",
                         "H67\\.")
+
+coverage_types = c("Medicare","Medicaid","Government","Private","None")
+max_col = function(x,n){
+  
+  value = sort(x,decreasing = TRUE)[n]
+  if(value > 0){
+    if(sum(x %in% value) == 1){
+      column_name = coverage_types[which(x == value,arr.ind = TRUE)]
+    } else{
+      column_name = coverage_types[which(x == value,arr.ind = TRUE)[2]]
+    }
+  } else{column_name = NA}
+  
+  return(column_name)
+  
+}

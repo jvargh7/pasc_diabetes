@@ -32,7 +32,8 @@ pdadm405_hr <- read_csv("analysis cpit2dm/pdadm406_difference relative to unexpo
   mutate(t = -1)
 
 label_order <- c("Historical","Unexposed","Exposed")
-color_order <- c("blue","darkgreen","red")
+# color_order <- c("#77DD77","#00008b","#ff964f")
+color_order <- c("#F8CBAD","#DEEBF7","#E2F0D9")
 
 (fig_hr = pdadm405_hr %>% 
     dplyr::filter(outcome == "CPIT2DM") %>% 

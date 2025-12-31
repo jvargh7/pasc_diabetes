@@ -279,7 +279,7 @@ cp2 <- bind_rows(
   mutate(diagnosis_date = case_when(incident_dm == 10 ~ criterion1_date,
                                     TRUE ~ criterion2_date)) %>% 
   mutate(incident_dm = 1) %>% 
-# Are there encounters in the previous 1.5 years?
+  # Are there encounters in the previous 1.5 years?
   mutate(criterion1_date_minus549 = criterion1_date - days(549)) %>% 
   dplyr::filter(ID %in% included_patients$ID)
 

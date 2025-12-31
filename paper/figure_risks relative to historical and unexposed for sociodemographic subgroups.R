@@ -5,11 +5,13 @@ source("C:/code/external/pasc_cardiometabolic_risk/functions/marginal_prediction
 # Hazard ratios ----------
 pdadm405_hr <- read_csv("analysis cpit2dm/pdadm405_difference relative to historical.csv") %>% 
   mutate(group = str_replace(exposure,"COHORT",""),
-         facet = str_replace(modifier1,modifier_var,"")) %>% 
+         facet = str_replace(modifier1,modifier_var,"")) %>%
   mutate(facet = case_when(is.na(modifier1) & modifier_var == "hospitalization_category" ~ "Not Hospitalized",
                            facet == "hospitalization" ~ "Hospitalized",
-                           is.na(facet) ~ "Overall",
-                           TRUE ~ facet)) %>% 
+                           modifier_var == "Overlap" ~ "Overlap",
+                           is.na(facet)  ~ "Overall",
+                           TRUE ~ facet)) %>%
+  dplyr::filter(facet != "Overlap") %>% 
   mutate(facet = factor(facet,levels=c("Overall",
                                        "Female",
                                        "Male",
@@ -31,7 +33,7 @@ pdadm405_hr <- read_csv("analysis cpit2dm/pdadm405_difference relative to histor
   mutate(t = -1)
 
 label_order <- c("Historical","Unexposed","Exposed")
-color_order <- c("blue","darkgreen","red")
+color_order <- c("#77DD77","#00008b","#ff964f")
 
 (fig_hr = pdadm405_hr %>% 
     dplyr::filter(outcome == "CPIT2DM") %>% 
@@ -59,7 +61,7 @@ pdadm405_hr %>%
 # Total Burden -----------
 
 pdadm403_burden <-   read_csv("analysis cpit2dm/pdadm403_cumulative incidence at one year.csv") %>% 
-  dplyr::filter(time == 365) %>% 
+  dplyr::filter(time == 365,is.na(modifier) | modifier != "Overlap") %>% 
   mutate(
     facet = modifier) %>% 
   mutate(facet = case_when(is.na(facet) ~ "Overall",
@@ -86,16 +88,18 @@ pdadm403_burden <-   read_csv("analysis cpit2dm/pdadm403_cumulative incidence at
     scale_color_discrete(name="",labels= label_order,type = color_order) +
     scale_y_discrete(limits=rev) +
     theme_bw() +
-    xlab("New cases per 1000 person-years (95% CI)") +
+    xlab("New cases per \n1000 person-years (95% CI)") +
     ylab("") +
     theme(legend.text = element_text(size = 14),
-          axis.text.y = element_blank())) 
+          axis.text.y = element_blank()
+          )
+  )
 
 
 # Relative burden to Unexposed --------
 
 pdadm403_relative <-   read_csv("analysis cpit2dm/pdadm403_difference cumulative incidence from unexposed at one year.csv") %>% 
-  dplyr::filter(time == 365) %>% 
+  dplyr::filter(time == 365,is.na(modifier) | modifier != "Overlap") %>% 
   mutate(
     facet = modifier) %>% 
   mutate(facet = case_when(is.na(facet) ~ "Overall",

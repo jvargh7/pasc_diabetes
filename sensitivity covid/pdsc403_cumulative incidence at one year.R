@@ -106,7 +106,7 @@ surv_probs %>%
 
 
 
-(diff_with_exposed = surv_probs %>% 
+(diff_with_exposed = read_csv("sensitivity covid/pdsc403_cumulative incidence at one year.csv") %>% 
   left_join(.,
             {.} %>% 
               dplyr::filter(COHORT == "exposed") %>% 
@@ -124,7 +124,7 @@ surv_probs %>%
   write_csv(.,"sensitivity covid/pdsc403_difference cumulative incidence from exposed at one year.csv")
 
 
-(diff_with_historical = surv_probs %>% 
+(diff_with_historical = read_csv("sensitivity covid/pdsc403_cumulative incidence at one year.csv") %>% 
     left_join(.,
               {.} %>% 
                 dplyr::filter(COHORT == "historical") %>% 
@@ -132,17 +132,17 @@ surv_probs %>%
                 rename(exposed_surv = surv,
                        exposed_se = se),
               by = c("time","modifier")) %>% 
-    mutate(reduced_surv_est = surv - exposed_surv,
-           reduced_surv_se = sqrt(se^2 + exposed_se^2)) %>% 
-    mutate(reduced_surv_lci = case_when(COHORT == "historical" ~ NA_real_,
-                                        TRUE ~ reduced_surv_est - 1.96*reduced_surv_se),
-           reduced_surv_uci = case_when(COHORT == "historical" ~ NA_real_,
-                                        TRUE ~ reduced_surv_est + 1.96*reduced_surv_se)) %>% 
-    mutate(across(one_of(c("reduced_surv_est","reduced_surv_lci","reduced_surv_uci")),.fns=function(x) (x)*1000))) %>% 
+    mutate(higher_surv_est = surv - exposed_surv,
+           higher_surv_se = sqrt(se^2 + exposed_se^2)) %>% 
+    mutate(higher_surv_lci = case_when(COHORT == "historical" ~ NA_real_,
+                                        TRUE ~ higher_surv_est - 1.96*higher_surv_se),
+           higher_surv_uci = case_when(COHORT == "historical" ~ NA_real_,
+                                        TRUE ~ higher_surv_est + 1.96*higher_surv_se)) %>% 
+    mutate(across(one_of(c("higher_surv_est","higher_surv_lci","higher_surv_uci")),.fns=function(x) (x)*1000))) %>% 
   write_csv(.,"sensitivity covid/pdsc403_difference cumulative incidence from historical at one year.csv")
 
 
-(diff_with_unexposed = surv_probs %>% 
+(diff_with_unexposed = read_csv("sensitivity covid/pdsc403_cumulative incidence at one year.csv") %>% 
     left_join(.,
               {.} %>% 
                 dplyr::filter(COHORT == "unexposed") %>% 
@@ -150,11 +150,11 @@ surv_probs %>%
                 rename(exposed_surv = surv,
                        exposed_se = se),
               by = c("time","modifier")) %>% 
-    mutate(reduced_surv_est = surv - exposed_surv,
-           reduced_surv_se = sqrt(se^2 + exposed_se^2)) %>% 
-    mutate(reduced_surv_lci = case_when(COHORT == "unexposed" ~ NA_real_,
-                                        TRUE ~ reduced_surv_est - 1.96*reduced_surv_se),
-           reduced_surv_uci = case_when(COHORT == "unexposed" ~ NA_real_,
-                                        TRUE ~ reduced_surv_est + 1.96*reduced_surv_se)) %>% 
-    mutate(across(one_of(c("reduced_surv_est","reduced_surv_lci","reduced_surv_uci")),.fns=function(x) (x)*1000))) %>% 
+    mutate(diff_surv_est = surv - exposed_surv,
+           diff_surv_se = sqrt(se^2 + exposed_se^2)) %>% 
+    mutate(diff_surv_lci = case_when(COHORT == "unexposed" ~ NA_real_,
+                                        TRUE ~ diff_surv_est - 1.96*diff_surv_se),
+           diff_surv_uci = case_when(COHORT == "unexposed" ~ NA_real_,
+                                        TRUE ~ diff_surv_est + 1.96*diff_surv_se)) %>% 
+    mutate(across(one_of(c("diff_surv_est","diff_surv_lci","diff_surv_uci")),.fns=function(x) (x)*1000))) %>% 
   write_csv(.,"sensitivity covid/pdsc403_difference cumulative incidence from unexposed at one year.csv")

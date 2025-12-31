@@ -32,7 +32,9 @@ pdadm402_hr <- read_csv("analysis cpit2dm/pdadm402_difference relative to expose
   mutate(t = -1)
 
 label_order <- c("Historical","Unexposed","Exposed")
-color_order <- c("blue","darkgreen","red")
+# color_order <- c("#77DD77","#00008b","#ff964f")
+
+# #F8CBAD, #DEEBF7, #E2F0D9
 
 (fig_hr = pdadm402_hr %>% 
     dplyr::filter(outcome == "CPIT2DM") %>% 
@@ -69,8 +71,8 @@ pdadm403_burden <-   read_csv("analysis cpit2dm/pdadm403_cumulative incidence at
 
 (fig_burden = pdadm403_burden %>% 
     ggplot(data=.,aes(x=cuminc_surv,xmin=cuminc_ci_lower,xmax=cuminc_ci_upper,y=facet,fill=group)) +
-    geom_col(position = position_dodge(width=0.9)) +
-    geom_errorbarh(position = position_dodge(width=0.9),height=0.2) +
+    geom_col(position = position_dodge(width=1)) +
+    geom_errorbarh(position = position_dodge(width=1),height=0.2) +
     scale_fill_discrete(name="",labels= label_order,type = color_order) +
     scale_color_discrete(name="",labels= label_order,type = color_order) +
     scale_y_discrete(limits=rev) +
@@ -107,8 +109,8 @@ pdadm403_relative <-   read_csv("analysis cpit2dm/pdadm403_difference cumulative
 
 (fig_relative = pdadm403_relative %>% 
     ggplot(data=.,aes(x=reduced_surv_est,xmin=reduced_surv_lci,xmax=reduced_surv_uci,y=facet,fill=group)) +
-    geom_col(position = position_dodge(width=0.9)) +
-    geom_errorbarh(position = position_dodge(width=0.9),height=0.2) +
+    geom_col(position = position_dodge(width=1)) +
+    geom_errorbarh(position = position_dodge(width=1),height=0.2) +
     scale_fill_discrete(name="",labels= label_order,type = color_order) +
     scale_color_discrete(name="",labels= label_order,type = color_order) +
     scale_y_discrete(limits=rev) +
